@@ -10,7 +10,13 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: 'batch-uploader-group' });
 let tickBuffer: any[] = [];
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 1000;  // Increased for better performance
+const FLUSH_INTERVAL = 5000; // 5 seconds instead of 2
+
+// Performance monitoring
+let totalTicksReceived = 0;
+let totalTicksInserted = 0;
+let totalBatchesProcessed = 0;
 
 // Insert function
 async function batchInsertTicks(rows: any[]) {
@@ -40,7 +46,11 @@ async function batchInsertTicks(rows: any[]) {
       ON CONFLICT (symbol, trade_id, time) DO NOTHING
     `;
     await client.query(sql, values);
-    console.log(`Inserted ${rows.length} ticks`);
+    totalTicksInserted += rows.length;
+    totalBatchesProcessed += 1;
+
+    const avgBatchSize = Math.round(totalTicksInserted / totalBatchesProcessed);
+    console.log(`✅ Batch inserted ${rows.length} ticks | Total received: ${totalTicksReceived} | Total inserted: ${totalTicksInserted} | Avg batch: ${avgBatchSize}`);
   } finally {
     client.release();
   }
@@ -63,7 +73,7 @@ async function start() {
     eachMessage: async ({ message }) => {
       try {
         const tick = JSON.parse(message.value!.toString());
-        console.log(tick);
+        totalTicksReceived += 1; // Count incoming ticks
 
         tickBuffer.push({
           symbol: tick.symbol,
@@ -85,7 +95,13 @@ async function start() {
     }
   });
 
-  setInterval(flushBuffer, 2000);
+  setInterval(flushBuffer, FLUSH_INTERVAL);
+
+  // Performance status every 60 seconds
+  setInterval(() => {
+    const avgBatchSize = totalBatchesProcessed > 0 ? Math.round(totalTicksInserted / totalBatchesProcessed) : 0;
+    console.log(`📊 Status: ${totalTicksReceived} received, ${totalTicksInserted} inserted, ${totalBatchesProcessed} batches, avg batch size: ${avgBatchSize}`);
+  }, 60000);
 }
 
 start().catch(console.error);
