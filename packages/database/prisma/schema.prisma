@@ -14,9 +14,56 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id String @id @default(uuid())
-  email String @unique
-  name String 
-  password String
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+
+  balance   Decimal  @default(0.0) // account balance in USD
+  orders    Order[]
 }
+
+model Order {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  asset     String              // e.g. "BTC-USD"
+  orderType OrderType           // SPOT or CFD
+  direction OrderDirection?     // Long/Short (only relevant for CFD)
+  
+  qty       Decimal             // how much they buy/sell
+  leverage  Int?                // only for CFD
+  margin    Decimal?            // only for CFD
+
+  entryPrice      Decimal        // execution price
+  stopLossPrice   Decimal?       // optional
+  takeProfitPrice Decimal?       // optional
+  closePrice      Decimal?
+
+  pnl        Decimal?
+  status     OrderStatus @default(OPEN)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  closedAt   DateTime?
+}
+
+enum OrderType {
+  SPOT
+  CFD   // aka leverage
+}
+
+enum OrderDirection {
+  LONG
+  SHORT
+}
+
+enum OrderStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+

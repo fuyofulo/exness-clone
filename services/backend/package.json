@@ -13,17 +13,16 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-
-    "database": "file:../../packages/database",
-    "schemas": "file:../../packages/schemas",
-    "secrets": "file:../../packages/secrets",
-    
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
+    "database": "file:../../packages/database",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "redis": "^5.8.2",
+    "schemas": "file:../../packages/schemas",
+    "secrets": "file:../../packages/secrets",
     "typescript": "^5.9.2"
   }
 }

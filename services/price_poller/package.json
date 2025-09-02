@@ -19,6 +19,7 @@
     "kafkajs": "^2.2.4",
     "redis": "^5.8.2",
     "secrets": "file:../../packages/secrets",
+    "exness_redis": "file:../../packages/redis",
     "typescript": "^5.9.2",
     "ws": "^8.18.3"
   }

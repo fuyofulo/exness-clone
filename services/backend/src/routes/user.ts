@@ -12,7 +12,7 @@ router.post("/signup", async (req, res) => {
     const parsedData = signupSchema.safeParse(req.body);
 
     if (!parsedData.success) {
-        res.status(400).json({
+        res.status(403).json({
             message: "Invalid request body",
         });
         return;
@@ -28,7 +28,7 @@ router.post("/signup", async (req, res) => {
     });
     
     if (existingUser) {
-        res.status(400).json({
+        res.status(403).json({
             message: "User already exists",
             userId: existingUser.id,
         });
@@ -47,8 +47,8 @@ router.post("/signup", async (req, res) => {
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET!);
 
-    res.json({
-        id: user.id,
+    res.status(200).json({
+        userId: user.id,
         name: user.name,
         token: token,
     });
@@ -60,7 +60,7 @@ router.post("/signin", async (req, res) => {
     const parsedData = signinSchema.safeParse(req.body);
 
     if (!parsedData.success) {
-        res.status(400).json({
+        res.status(403).json({
             message: "Invalid request body",
         });
         return;
@@ -75,7 +75,7 @@ router.post("/signin", async (req, res) => {
     });
 
     if (!user) {
-        res.status(400).json({
+        res.status(403).json({
             message: "User not found",
         });
         return;
@@ -84,16 +84,16 @@ router.post("/signin", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-        res.status(400).json({
-            message: "Invalid password",
+        res.status(403).json({
+            message: "Invalid credentials",
         });
         return;
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET!);
 
-    res.json({
-        id: user.id,
+    res.status(200).json({
+        userId: user.id,
         name: user.name,
         token: token,
     });

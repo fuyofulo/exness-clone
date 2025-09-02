@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { connectToRedis, publishPrice } from './redis';
+import { connectRedis, rPublish } from 'exness_redis';
 import { connectToKafka, pushTradeData } from './kafka';
 
 const SYMBOLS = ['btcusdt', 'ethusdt', 'solusdt'];
@@ -58,7 +58,7 @@ async function startTradesPoller (symbols: string[]) {
                 timestamp: tradeData.timestamp,
             }
 
-            await publishPrice(`${tradeData.symbol}`, newPrice);
+            await rPublish(`${tradeData.symbol}`, newPrice);
     
             // send data to kafka queue
             const tickData = {
@@ -80,6 +80,6 @@ async function startTradesPoller (symbols: string[]) {
     })
 }
 
-connectToRedis();
+connectRedis();
 connectToKafka();
 startTradesPoller(SYMBOLS);
