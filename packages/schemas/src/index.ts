@@ -16,7 +16,7 @@ export const spotOrderSchema = z.object({
     asset: z.string(),                         // e.g. "BTC/USDT"
     quantity: z.number().positive(),           // how much user buys/sells
     decimals: z.number().int().nonnegative(),  // asset precision
-    direction: z.enum(["BUY", "SELL"]),        // spot = buy/sell, not long/short
+    direction: z.enum(["LONG", "SHORT"]),      // using long/short instead of buy/sell 
     orderType: z.literal("SPOT"),
     slippage: z.number(),
 });

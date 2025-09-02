@@ -1,18 +1,16 @@
 import { prismaclient } from "database";
 import { Router } from "express";
 import { spotOrderSchema, cfdOrderSchema } from "schemas";
-import { REDIS_URL } from "secrets";
-import redis from "redis";
+import { getlatestPrice, connectRedis } from "exness_redis";
+import { authMiddleware } from "../middlewares/auth";
 
 const router = Router();
 
-async function getAssetPrice(asset: string) {
-    await redis.createClient({ url: REDIS_URL as any });
+async function calculateSlippage() {
     
-
 }
 
-router.post("/create", async (req, res) => {
+router.post("/create", authMiddleware, async (req, res) => {
   
     try {
         console.log(req.body);
@@ -29,14 +27,33 @@ router.post("/create", async (req, res) => {
                 })
                 return;
             } 
-
             // get asset price from redis
-            // check slippage
-            // send to execution queue directly
+            const realtime_price = await getlatestPrice(parsedData.data.asset);
+
+            // check slippage (need to implement)
+
+            // create order entry in database
+            const order_entry = await prismaclient.order.create({
+                data: {
+                    // @ts-ignore
+                    userId: req.userId,
+                    asset: parsedData.data.asset,
+                    orderType: "SPOT",
+                    direction: parsedData.data.direction,
+                    qty: parsedData.data.quantity,
+                    entryPrice: realtime_price!.price,
+                    status: "OPEN",
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }
+            })
+            // send to execution queue
+            
 
             console.log('you have placed a spot order');
             res.json({
-                message: "Spot order created"
+                message: "Spot order created",
+                price: realtime_price
             })
 
         } else if (orderType === "CFD") {

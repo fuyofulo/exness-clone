@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { connectRedis, rPublish } from 'exness_redis';
+import { connectRedis, upsertLatestPrice, rPublish } from 'exness_redis';
 import { connectToKafka, pushTradeData } from './kafka';
 
 const SYMBOLS = ['btcusdt', 'ethusdt', 'solusdt'];
@@ -16,6 +16,8 @@ function checkDecimals (value: string) {
 }
 
 async function startTradesPoller (symbols: string[]) {
+
+    const success = await connectRedis();
 
     const tradesStreams = symbols.map(symbol => `${symbol}@trade`);
     const trades_ws = new WebSocket(`wss://stream.binance.com:9443/ws/${tradesStreams.join('/')}`);
@@ -50,7 +52,7 @@ async function startTradesPoller (symbols: string[]) {
 
             // send data to redis pub/sub 
             const newPrice = {
-                symbol: tradeData.symbol,
+                symbol: tradeData.symbol.toUpperCase(),
                 price: scaledPrice,
                 buyPrice: buyPrice,
                 sellPrice: sellPrice,
@@ -58,7 +60,10 @@ async function startTradesPoller (symbols: string[]) {
                 timestamp: tradeData.timestamp,
             }
 
-            await rPublish(`${tradeData.symbol}`, newPrice);
+            // await rPublish(`${tradeData.symbol}`, newPrice);
+            // updating the cache with the latest price
+            const price = await upsertLatestPrice(newPrice);
+            // console.log(price);
     
             // send data to kafka queue
             const tickData = {
@@ -71,7 +76,7 @@ async function startTradesPoller (symbols: string[]) {
                 is_buyer_maker: message.m
             }; 
 
-            await pushTradeData(`ticks`, tickData);
+            // await pushTradeData(`ticks`, tickData);
 
         } catch (error) {
             console.log('error', error);
@@ -80,6 +85,6 @@ async function startTradesPoller (symbols: string[]) {
     })
 }
 
-connectRedis();
+
 connectToKafka();
 startTradesPoller(SYMBOLS);

@@ -40,4 +40,5 @@ function getRedis() {
     return redisclient;
 }
 __exportStar(require("./ops"), exports);
+__exportStar(require("./price"), exports);
 //# sourceMappingURL=index.js.map

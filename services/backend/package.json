@@ -23,6 +23,7 @@
     "redis": "^5.8.2",
     "schemas": "file:../../packages/schemas",
     "secrets": "file:../../packages/secrets",
+    "exness_redis": "file:../../packages/redis",
     "typescript": "^5.9.2"
   }
 }
