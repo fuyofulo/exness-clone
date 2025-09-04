@@ -17,7 +17,7 @@ function checkDecimals (value: string) {
 
 async function startTradesPoller (symbols: string[]) {
 
-    const success = await connectRedis();
+    await connectRedis();
 
     const tradesStreams = symbols.map(symbol => `${symbol}@trade`);
     const trades_ws = new WebSocket(`wss://stream.binance.com:9443/ws/${tradesStreams.join('/')}`);
@@ -60,9 +60,9 @@ async function startTradesPoller (symbols: string[]) {
                 timestamp: tradeData.timestamp,
             }
 
-            // await rPublish(`${tradeData.symbol}`, newPrice);
+            await rPublish(`${tradeData.symbol}`, newPrice);
             // updating the cache with the latest price
-            const price = await upsertLatestPrice(newPrice);
+            // const price = await upsertLatestPrice(newPrice);
             // console.log(price);
     
             // send data to kafka queue

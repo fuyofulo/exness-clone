@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "exness_redis": "file:../../packages/redis",
     "typescript": "^5.9.2"
   }
 }

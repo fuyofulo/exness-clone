@@ -6,11 +6,8 @@ import { authMiddleware } from "../middlewares/auth";
 
 const router = Router();
 
-async function calculateSlippage() {
-    
-}
-
-router.post("/create", authMiddleware, async (req, res) => {
+router.post("/create", async (req, res) => {
+    console.log('inside create order endpoint')
   
     try {
         console.log(req.body);
@@ -31,22 +28,23 @@ router.post("/create", authMiddleware, async (req, res) => {
             const realtime_price = await getlatestPrice(parsedData.data.asset);
 
             // check slippage (need to implement)
+            // THE EXECUTION ENGINE SHOULD HANDLE THE SLIPPAGE AND THE ORDER EXECUTION
 
             // create order entry in database
-            const order_entry = await prismaclient.order.create({
-                data: {
-                    // @ts-ignore
-                    userId: req.userId,
-                    asset: parsedData.data.asset,
-                    orderType: "SPOT",
-                    direction: parsedData.data.direction,
-                    qty: parsedData.data.quantity,
-                    entryPrice: realtime_price!.price,
-                    status: "OPEN",
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                }
-            })
+            // const order_entry = await prismaclient.order.create({
+            //     data: {
+            //         // @ts-ignore
+            //         userId: req.userId,
+            //         asset: parsedData.data.asset,
+            //         orderType: "SPOT",
+            //         direction: parsedData.data.direction,
+            //         qty: parsedData.data.quantity,
+            //         entryPrice: realtime_price!.price,
+            //         status: "OPEN",
+            //         createdAt: new Date(),
+            //         updatedAt: new Date(),
+            //     }
+            // })
             // send to execution queue
             
 
@@ -85,10 +83,6 @@ router.post("/create", authMiddleware, async (req, res) => {
         console.error(error);
     }
 
-    
 });
-
-
-
 
 export const orderRouter = router;
